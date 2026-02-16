@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams()
   const [games, setGames] = useState([])
   const [allGames, setAllGames] = useState([])
@@ -119,5 +119,18 @@ export default function SearchPage() {
         </div>
       )}
     </>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="page-header">
+        <h1 className="page-title">🔍 Search Games</h1>
+        <p className="page-subtitle">Loading...</p>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   )
 }
