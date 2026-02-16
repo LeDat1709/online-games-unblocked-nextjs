@@ -1,28 +1,43 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { promises as fs } from 'fs'
-import path from 'path'
 
-async function getGames() {
-  const filePath = path.join(process.cwd(), 'public', 'games.json')
-  const fileContents = await fs.readFile(filePath, 'utf8')
-  return JSON.parse(fileContents)
-}
+export default function SearchPage() {
+  const searchParams = useSearchParams()
+  const [games, setGames] = useState([])
+  const [allGames, setAllGames] = useState([])
+  const [query, setQuery] = useState('')
+  const [mounted, setMounted] = useState(false)
 
-export const metadata = {
-  title: 'Search Games - Free Online Games 🎮',
-  description: 'Search and find your favorite free online games',
-}
+  useEffect(() => {
+    setMounted(true)
+    // Load games from JSON
+    fetch('/games.json')
+      .then(res => res.json())
+      .then(data => {
+        setAllGames(data)
+        const q = searchParams.get('q') || ''
+        setQuery(q)
+        if (q) {
+          const filtered = data.filter((game) =>
+            game.title.toLowerCase().includes(q.toLowerCase()) ||
+            game.category.toLowerCase().includes(q.toLowerCase())
+          )
+          setGames(filtered)
+        }
+      })
+  }, [searchParams])
 
-export default async function SearchPage({ searchParams }) {
-  const allGames = await getGames()
-  const query = searchParams.q || ''
-  
-  const games = query
-    ? allGames.filter((game) =>
-        game.title.toLowerCase().includes(query.toLowerCase()) ||
-        game.category.toLowerCase().includes(query.toLowerCase())
-      )
-    : []
+  if (!mounted) {
+    return (
+      <div className="page-header">
+        <h1 className="page-title">🔍 Search Games</h1>
+        <p className="page-subtitle">Loading...</p>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -52,6 +67,7 @@ export default async function SearchPage({ searchParams }) {
                   src={game.thumbnail} 
                   alt={game.title}
                   className="game-thumbnail"
+                  loading="lazy"
                 />
                 <div className="game-info">
                   <h3 className="game-title">{game.title}</h3>
@@ -62,15 +78,46 @@ export default async function SearchPage({ searchParams }) {
           </div>
 
           {/* Bottom Ad */}
-          <div className="ad-banner" style={{ marginTop: '2rem' }}>
-            📢 Advertisement Space (728x90) - Google AdSense
+          <div className="ad-banner ad-minimal" style={{ marginTop: '2rem' }}>
+            📢 Ad (728x90)
           </div>
         </>
       ) : query ? (
-        <div className="page-header">
-          <p>No games found. Try a different search term!</p>
+        <div className="empty-state" style={{ 
+          textAlign: 'center', 
+          padding: '3rem 1rem',
+          color: 'var(--text-light)'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔍</div>
+          <h3>No games found</h3>
+          <p>Try a different search term!</p>
+          <Link 
+            href="/" 
+            style={{
+              display: 'inline-block',
+              marginTop: '1rem',
+              padding: '0.8rem 1.5rem',
+              background: 'var(--primary)',
+              color: 'white',
+              borderRadius: '20px',
+              textDecoration: 'none',
+              fontWeight: '600'
+            }}
+          >
+            Browse All Games
+          </Link>
         </div>
-      ) : null}
+      ) : (
+        <div className="empty-state" style={{ 
+          textAlign: 'center', 
+          padding: '3rem 1rem',
+          color: 'var(--text-light)'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎮</div>
+          <h3>Start Searching</h3>
+          <p>Use the search bar above to find your favorite games!</p>
+        </div>
+      )}
     </>
   )
 }
