@@ -56,7 +56,10 @@ export default async function GamePage({ params }) {
               <iframe
                 src={game.embedUrl}
                 allowFullScreen
+                allow="autoplay; fullscreen; payment"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                 title={game.title}
+                loading="lazy"
               />
             </div>
           </FocusMode>
