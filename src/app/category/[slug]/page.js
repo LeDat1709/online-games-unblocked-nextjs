@@ -8,98 +8,146 @@ async function getGames() {
   return JSON.parse(fileContents)
 }
 
-const categoryInfo = {
-  action: { name: 'Action', icon: '⚔️', description: 'Fast-paced action games' },
-  puzzle: { name: 'Puzzle', icon: '🧩', description: 'Brain-teasing puzzle games' },
-  racing: { name: 'Racing', icon: '🏎️', description: 'High-speed racing games' },
-  sports: { name: 'Sports', icon: '⚽', description: 'Sports and athletics games' },
-  adventure: { name: 'Adventure', icon: '🗺️', description: 'Exciting adventure games' },
-  arcade: { name: 'Arcade', icon: '🕹️', description: 'Classic arcade games' },
-  strategy: { name: 'Strategy', icon: '🎯', description: 'Strategic thinking games' },
-  casual: { name: 'Casual', icon: '🎲', description: 'Casual and relaxing games' },
-  multiplayer: { name: 'Multiplayer', icon: '👥', description: 'Multiplayer games' },
-  '2player': { name: '2 Player', icon: '🎮', description: '2 player games' },
+// Icon mapping
+const categoryIcons = {
+  'Action': '⚔️',
+  'Puzzle': '🧩',
+  'Racing': '🏎️',
+  'Sports': '⚽',
+  'Adventure': '🗺️',
+  'Arcade': '🕹️',
+  'Strategy': '🎯',
+  'Casual': '🎲',
+  'Multiplayer': '👥',
+  'Shooter': '🔫',
+  'Fighting': '🥊',
+  'Platform': '🪜',
+  'Simulation': '🎮',
+  'RPG': '🐉',
+  'Card': '🃏',
+  'Board': '♟️',
+  'Music': '🎵',
+  'Educational': '📚',
+  'Clicker': '👆',
+  'Idle': '⏰',
+  'Tower Defense': '🗼',
+  'Match 3': '💎',
+  'Cooking': '👨‍🍳',
+  'Dress Up': '👗',
+  'Baby': '👶',
+  'Girls': '👧',
+  'Boys': '👦',
+  'Kids': '🧒',
+  'Junior': '🎈',
+  'Classic': '🎰',
+  'Retro': '👾',
+  'Skill': '🎪',
+  'Trivia': '❓',
+  'Word': '📝',
+  'Math': '🔢',
+  'Memory': '🧠',
 }
 
 export async function generateStaticParams() {
-  return Object.keys(categoryInfo).map((slug) => ({ slug }))
+  const games = await getGames()
+  const categories = new Set()
+  
+  games.forEach(game => {
+    if (game.category) {
+      const slug = game.category.toLowerCase().replace(/\s+/g, '-')
+      categories.add(slug)
+    }
+  })
+  
+  return Array.from(categories).map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }) {
-  const cat = categoryInfo[params.slug]
-  if (!cat) {
+  const allGames = await getGames()
+  const slug = params.slug
+  
+  // Tìm category name từ games
+  const game = allGames.find(g => 
+    g.category && g.category.toLowerCase().replace(/\s+/g, '-') === slug
+  )
+  
+  if (!game) {
     return {
       title: 'Category Not Found',
       description: 'This category does not exist.',
     }
   }
+  
+  const categoryName = game.category
+  
   return {
-    title: `${cat.name} Games - Play Free ${cat.name} Games Online 🎮`,
-    description: `Play the best free ${cat.name.toLowerCase()} games online. ${cat.description}. No download required!`,
+    title: `${categoryName} Games - Play Free ${categoryName} Games Online 🎮`,
+    description: `Play the best free ${categoryName.toLowerCase()} games online. No download required!`,
   }
 }
 
 export default async function CategoryPage({ params }) {
   const allGames = await getGames()
-  const cat = categoryInfo[params.slug]
+  const slug = params.slug
   
-  if (!cat) {
+  // Filter games theo category slug
+  const games = allGames.filter(game => {
+    if (!game.category) return false
+    const gameSlug = game.category.toLowerCase().replace(/\s+/g, '-')
+    return gameSlug === slug
+  })
+  
+  if (games.length === 0) {
     return (
       <div className="page-header">
         <h1 className="page-title">Category Not Found</h1>
-        <p className="page-subtitle">This category does not exist.</p>
+        <p className="page-subtitle">This category does not exist or has no games yet.</p>
+        <Link href="/" className="back-button" style={{ marginTop: '1rem', display: 'inline-flex' }}>
+          ← Back to Home
+        </Link>
       </div>
     )
   }
   
-  const games = allGames.filter(
-    (game) => game.category.toLowerCase() === params.slug.toLowerCase()
-  )
+  const categoryName = games[0].category
+  const icon = categoryIcons[categoryName] || '🎮'
 
   return (
     <>
       <div className="page-header">
         <h1 className="page-title">
-          {cat.icon} {cat.name} Games
+          {icon} {categoryName} Games
         </h1>
         <p className="page-subtitle">
-          {games.length} {cat.description} to play for free
+          {games.length} amazing {categoryName.toLowerCase()} games to play for free
         </p>
       </div>
 
-      {games.length > 0 ? (
-        <>
-          <div className="games-grid">
-            {games.map((game) => (
-              <Link 
-                key={game.id} 
-                href={`/game/${game.id}`}
-                className="game-card"
-              >
-                <img 
-                  src={game.thumbnail} 
-                  alt={game.title}
-                  className="game-thumbnail"
-                  loading="lazy"
-                />
-                <div className="game-info">
-                  <h3 className="game-title">{game.title}</h3>
-                  <span className="game-category">{game.category}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+      <div className="games-grid">
+        {games.map((game) => (
+          <Link 
+            key={game.id} 
+            href={`/game/${game.id}`}
+            className="game-card"
+          >
+            <img 
+              src={game.thumbnail} 
+              alt={game.title}
+              className="game-thumbnail"
+              loading="lazy"
+            />
+            <div className="game-info">
+              <h3 className="game-title">{game.title}</h3>
+              <span className="game-category">{game.category}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
 
-          {/* Bottom Ad */}
-          <div className="ad-banner ad-minimal" style={{ marginTop: '2rem' }}>
-            📢 Ad (728x90)
-          </div>
-        </>
-      ) : (
-        <div className="page-header">
-          <p>No games found in this category yet. Check back soon!</p>
-        </div>
-      )}
+      {/* Bottom Ad */}
+      <div className="ad-banner ad-minimal" style={{ marginTop: '2rem' }}>
+        📢 Ad (728x90)
+      </div>
     </>
   )
 }

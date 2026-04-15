@@ -4,6 +4,84 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
+// Icon mapping cho categories
+const categoryIcons = {
+  'Action': '⚔️',
+  'Puzzle': '🧩',
+  'Racing': '🏎️',
+  'Sports': '⚽',
+  'Adventure': '🗺️',
+  'Arcade': '🕹️',
+  'Strategy': '🎯',
+  'Casual': '🎲',
+  'Multiplayer': '👥',
+  'Shooter': '🔫',
+  'Fighting': '🥊',
+  'Platform': '🪜',
+  'Simulation': '🎮',
+  'RPG': '🐉',
+  'Card': '🃏',
+  'Board': '♟️',
+  'Music': '🎵',
+  'Educational': '📚',
+  'Clicker': '👆',
+  'Idle': '⏰',
+  'Tower Defense': '🗼',
+  'Match 3': '💎',
+  'Cooking': '👨‍🍳',
+  'Dress Up': '👗',
+  'Baby': '👶',
+  'Girls': '👧',
+  'Boys': '👦',
+  'Kids': '🧒',
+  'Junior': '🎈',
+  'Classic': '🎰',
+  'Retro': '👾',
+  'Skill': '🎪',
+  'Trivia': '❓',
+  'Word': '📝',
+  'Math': '🔢',
+  'Memory': '🧠',
+  'Hidden Object': '🔍',
+  'Escape': '🚪',
+  'Defense': '🛡️',
+  'War': '⚔️',
+  'Zombie': '🧟',
+  'Car': '🚗',
+  'Bike': '🏍️',
+  'Truck': '🚚',
+  'Parking': '🅿️',
+  'Flying': '✈️',
+  'Space': '🚀',
+  'Soccer': '⚽',
+  'Basketball': '🏀',
+  'Football': '🏈',
+  'Tennis': '🎾',
+  'Golf': '⛳',
+  'Baseball': '⚾',
+  'Hockey': '🏒',
+  'Boxing': '🥊',
+  'Wrestling': '🤼',
+  'Stickman': '🚶',
+  'Animal': '🐾',
+  'Dragon': '🐉',
+  'Princess': '👸',
+  'Knight': '🤺',
+  'Ninja': '🥷',
+  'Pirate': '🏴‍☠️',
+  'Robot': '🤖',
+  'Alien': '👽',
+  'Monster': '👹',
+  'Halloween': '🎃',
+  'Christmas': '🎄',
+  'Easter': '🐰',
+  'Valentine': '💝',
+  'Winter': '❄️',
+  'Summer': '☀️',
+  'Spring': '🌸',
+  'Fall': '🍂',
+}
+
 const navigation = {
   quick: [
     { name: 'Home', icon: '🏠', slug: 'all' },
@@ -15,18 +93,6 @@ const navigation = {
     { name: 'Popular', icon: '🔥', slug: 'popular' },
     { name: 'Trending', icon: '📈', slug: 'trending' },
   ],
-  categories: [
-    { name: 'Action', icon: '⚔️', slug: 'action' },
-    { name: 'Puzzle', icon: '🧩', slug: 'puzzle' },
-    { name: 'Racing', icon: '🏎️', slug: 'racing' },
-    { name: 'Sports', icon: '⚽', slug: 'sports' },
-    { name: 'Adventure', icon: '🗺️', slug: 'adventure' },
-    { name: 'Arcade', icon: '🕹️', slug: 'arcade' },
-    { name: 'Strategy', icon: '🎯', slug: 'strategy' },
-    { name: 'Casual', icon: '🎲', slug: 'casual' },
-    { name: 'Multiplayer', icon: '👥', slug: 'multiplayer' },
-    { name: '2 Player', icon: '🎮', slug: '2player' },
-  ],
 }
 
 export default function Sidebar() {
@@ -34,13 +100,40 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [categories, setCategories] = useState([])
 
   useEffect(() => {
     setMounted(true)
+    
+    // Fetch categories từ games.json
+    fetch('/games.json')
+      .then(res => res.json())
+      .then(games => {
+        // Lấy unique categories và đếm số games
+        const categoryCount = {}
+        games.forEach(game => {
+          const cat = game.category || 'Other'
+          categoryCount[cat] = (categoryCount[cat] || 0) + 1
+        })
+        
+        // Sort theo số lượng games (nhiều nhất trước)
+        const sortedCategories = Object.entries(categoryCount)
+          .sort((a, b) => b[1] - a[1])
+          .map(([name, count]) => ({
+            name,
+            slug: name.toLowerCase().replace(/\s+/g, '-'),
+            icon: categoryIcons[name] || '🎮',
+            count
+          }))
+        
+        setCategories(sortedCategories)
+      })
+      .catch(err => console.error('Failed to load categories:', err))
+    
     const checkMobile = () => {
       const mobile = window.innerWidth < 768
       setIsMobile(mobile)
-      setIsOpen(!mobile) // Desktop: mở, Mobile: đóng
+      setIsOpen(!mobile)
     }
     
     checkMobile()
@@ -68,7 +161,6 @@ export default function Sidebar() {
     return pathname === `/category/${slug}`
   }
 
-  // Prevent hydration mismatch
   if (!mounted) {
     return (
       <>
@@ -92,41 +184,6 @@ export default function Sidebar() {
                 ))}
               </nav>
             </div>
-            <div className="sidebar-section">
-              <h4 className="section-label">Featured</h4>
-              <nav className="nav-list">
-                {navigation.featured.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={getHref(item.slug)}
-                    className="nav-item"
-                  >
-                    <span className="nav-icon">{item.icon}</span>
-                    <span className="nav-name">{item.name}</span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
-            <div className="sidebar-section">
-              <h4 className="section-label">Categories</h4>
-              <nav className="nav-list">
-                {navigation.categories.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={getHref(item.slug)}
-                    className="nav-item"
-                  >
-                    <span className="nav-icon">{item.icon}</span>
-                    <span className="nav-name">{item.name}</span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
-            <div className="sidebar-ad">
-              <div className="ad-box">
-                📢 Ad<br/>(300x250)
-              </div>
-            </div>
           </div>
         </aside>
       </>
@@ -135,7 +192,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Toggle Button - Always visible */}
       <button 
         className="sidebar-toggle"
         onClick={() => setIsOpen(!isOpen)}
@@ -145,7 +201,6 @@ export default function Sidebar() {
         <span className="toggle-text">{isOpen ? 'Close' : 'Menu'}</span>
       </button>
 
-      {/* Sidebar */}
       <aside className={`sidebar ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
         <div className="sidebar-scroll">
           {/* Quick Access */}
@@ -183,11 +238,11 @@ export default function Sidebar() {
             </nav>
           </div>
 
-          {/* Categories */}
+          {/* Categories - Dynamic từ games.json */}
           <div className="sidebar-section">
             <h4 className="section-label">Categories</h4>
             <nav className="nav-list">
-              {navigation.categories.map((item) => (
+              {categories.map((item) => (
                 <Link
                   key={item.slug}
                   href={getHref(item.slug)}
@@ -196,6 +251,7 @@ export default function Sidebar() {
                 >
                   <span className="nav-icon">{item.icon}</span>
                   <span className="nav-name">{item.name}</span>
+                  <span className="category-count">{item.count}</span>
                 </Link>
               ))}
             </nav>
@@ -210,7 +266,6 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {/* Overlay - Only on mobile */}
       {isMobile && isOpen && (
         <div 
           className="sidebar-overlay"

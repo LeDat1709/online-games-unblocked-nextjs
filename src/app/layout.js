@@ -1,7 +1,6 @@
 import './globals.css'
 import Link from 'next/link'
 import SearchBar from '@/components/SearchBar'
-import Sidebar from '@/components/Sidebar'
 import DarkModeToggle from '@/components/DarkModeToggle'
 
 export const metadata = {
@@ -29,19 +28,8 @@ export default function RootLayout({ children }) {
           </div>
         </header>
         
-        {/* Top Banner Ad - Minimal, non-intrusive */}
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem' }}>
-          <div className="ad-banner ad-minimal">
-            📢 Ad (728x90)
-          </div>
-        </div>
-        
-        <div className="main-layout">
-          <Sidebar />
-          
-          <div className="content-area">
-            {children}
-          </div>
+        <div className="main-container">
+          {children}
         </div>
         
         <footer>
@@ -49,30 +37,15 @@ export default function RootLayout({ children }) {
             <div className="footer-section">
               <h3 className="footer-logo">⚡ QuickPlay</h3>
               <p className="footer-tagline">Lightning fast unblocked games</p>
-              <div className="footer-badges">
-                <span className="badge">🚫 No Popups</span>
-                <span className="badge">⚡ 0.5s Load</span>
-                <span className="badge">📱 Mobile Ready</span>
-              </div>
             </div>
 
             <div className="footer-section">
               <h4 className="footer-title">Quick Links</h4>
               <div className="footer-links">
                 <Link href="/">All Games</Link>
-                <Link href="/favorites">My Favorites</Link>
-                <Link href="/category/action">Action Games</Link>
-                <Link href="/category/puzzle">Puzzle Games</Link>
-              </div>
-            </div>
-
-            <div className="footer-section">
-              <h4 className="footer-title">Categories</h4>
-              <div className="footer-links">
-                <Link href="/category/racing">Racing</Link>
-                <Link href="/category/sports">Sports</Link>
-                <Link href="/category/adventure">Adventure</Link>
-                <Link href="/category/arcade">Arcade</Link>
+                <Link href="/new">New Games</Link>
+                <Link href="/popular">Popular</Link>
+                <Link href="/trending">Trending</Link>
               </div>
             </div>
 
@@ -82,23 +55,11 @@ export default function RootLayout({ children }) {
                 Play free unblocked games at school, work, or home. 
                 No downloads, no registration required.
               </p>
-              <div className="footer-social">
-                <a href="#" className="social-link">📘 Facebook</a>
-                <a href="#" className="social-link">🐦 Twitter</a>
-                <a href="#" className="social-link">📺 YouTube</a>
-              </div>
             </div>
           </div>
 
           <div className="footer-bottom">
             <p>© 2026 QuickPlay - All rights reserved</p>
-            <div className="footer-bottom-links">
-              <a href="#">Privacy Policy</a>
-              <span>•</span>
-              <a href="#">Terms of Service</a>
-              <span>•</span>
-              <a href="#">Contact</a>
-            </div>
           </div>
         </footer>
       </body>

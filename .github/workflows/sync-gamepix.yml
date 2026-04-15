@@ -1,0 +1,33 @@
+name: Sync GamePix Games
+
+on:
+  schedule:
+    # Chạy mỗi ngày lúc 2:00 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Cho phép chạy thủ công
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Sync GamePix games
+        run: node scripts/sync-gamepix.js
+        
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add public/games.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🎮 Auto-sync GamePix games" && git push)
